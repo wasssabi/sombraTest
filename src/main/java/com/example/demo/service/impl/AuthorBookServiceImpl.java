@@ -59,11 +59,10 @@ public class AuthorBookServiceImpl implements AuthorBookService {
 
     @Override
     public List<AuthorEntity> authorWithMostBooks() {
-        List<Auhor_BooksEntity> auhor_booksEntities = author_booksRepository.findAll();
 
         List<Long> authorsIds = new ArrayList<>();
 
-        auhor_booksEntities.forEach(auhor_booksEntity -> authorsIds.add(auhor_booksEntity.getAuthor().getId()));
+        author_booksRepository.findAll().forEach(auhor_booksEntity -> authorsIds.add(auhor_booksEntity.getAuthor().getId()));
 
         List<Long> resultIds = authorsIds.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet().stream()
@@ -83,20 +82,20 @@ public class AuthorBookServiceImpl implements AuthorBookService {
         List<Long> allAuthorIds = new ArrayList<>();
         List<Long> uniqueAuthorsIds = new ArrayList<>();
         List<List<BooksEntity>> result = new ArrayList<>();
-        for (int i = 0; i < auhor_booksEntities.size(); i++) {
-            allAuthorIds.add(auhor_booksEntities.get(i).getAuthor().getId());
-        }
 
-        List<Long> uniqueAuthors = allAuthorIds.stream().distinct().collect(Collectors.toList());
-        for (int i = 0; i < uniqueAuthors.size(); i++) {
-            if (Collections.frequency(allAuthorIds, uniqueAuthors.get(i)) > 1) {
-                uniqueAuthorsIds.add(uniqueAuthors.get(i));
+        auhor_booksEntities.forEach(auhor_booksEntity ->
+                allAuthorIds.add(auhor_booksEntity.getAuthor().getId()));
+
+
+        allAuthorIds.stream().distinct().collect(Collectors.toList()).forEach(aLong -> {
+            if (Collections.frequency(allAuthorIds, aLong) > 1) {
+                uniqueAuthorsIds.add(aLong);
             }
+        });
 
-        }
-        for (int i = 0; i < uniqueAuthorsIds.size(); i++) {
-            result.add(author_booksRepository.findAllBooksByAuthorId(authorService.getAuthor(uniqueAuthorsIds.get(i))));
-        }
+
+        uniqueAuthorsIds.forEach(aLong ->
+                result.add(author_booksRepository.findAllBooksByAuthorId(authorService.getAuthor(aLong))));
 
         List<BooksEntity> booksEntities = new ArrayList<>();
         for (int i = 0; i < result.size(); i++) {
